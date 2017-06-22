@@ -34,8 +34,8 @@ import (
 const (
 	ver1    = "8" // Tomcat major version
 	ver2    = "5" // Tomcat minor version
-	userID  = 106 // `tomcat7` user ID (cat /etc/passwd)
-	groupID = 114 // `tomcat7` group ID (cat /etc/group)
+	userID  = 0   // `tomcat` user ID (cat /etc/passwd)
+	groupID = 0   // `tomcat` group ID (cat /etc/group)
 	prefix  = "." // Text to separate results from other feedback
 
 	urlTemplate = "http://www.apache.org/dist/tomcat/tomcat-?/v?/bin/?apache-tomcat-?.tar.gz" // Must always point to apache.org and not a host mirror
