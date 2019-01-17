@@ -1,5 +1,5 @@
 // tomcatupdate.go - Defacto2 Apache Tomcat migration tool
-// version 1.01
+// version 1.02
 // © Ben Garrett
 //
 // References:
@@ -13,7 +13,7 @@ import (
 	"bufio"
 	"compress/gzip"
 	"crypto"
-	"crypto/sha1"
+	"crypto/sha512"
 	"flag"
 	"fmt"
 	"io"
@@ -100,22 +100,22 @@ func main() {
 	dirname := fmt.Sprintf("%v%v.%v.%v", f[3], ver1, ver2, ver3)
 	filename := fmt.Sprintf("%v%v.%v.%v%v", f[3], ver1, ver2, ver3, f[4])
 	srcFile := fmt.Sprintf("%v%v%v%v.%v.%v%v%v", f[0], ver1, f[1], ver1, ver2, ver3, f[2], filename)
-	srcSha1 := fmt.Sprintf("%v.sha1", srcFile)
+	srcSha512 := fmt.Sprintf("%v.sha512", srcFile)
 	if quiet == false {
 		fmt.Printf("Will download Tomcat %v.%v.%v from URL: %v", ver1, ver2, ver3, srcFile)
 	}
 
 	// checksums
-	var lcs string              // local file checksum
-	rcs := getChecksum(srcSha1) // remote checksum hosted on tomcat.apache.org
+	var lcs string                // local file checksum
+	rcs := getChecksum(srcSha512) // remote checksum hosted on tomcat.apache.org
 
 	// handle any local files with the same Tomcat archive filename
 	lfn, err := os.Open(filename)
 	defer lfn.Close()
 	if err == nil {
-		// if local file exists, check its SHA1 checksum against the one
+		// if local file exists, check its SHA512 checksum against the one
 		// hosted on tomcat.apache.org
-		lfh := crypto.SHA1.New()
+		lfh := crypto.SHA512.New()
 		io.Copy(lfh, lfn)
 		lcs = strings.Split(fmt.Sprintf("%x", lfh.Sum(nil)), "*")[0]
 	}
@@ -215,7 +215,7 @@ func changeOwner(dir string, recursive bool, uID, gID int) error {
 	})
 }
 
-func calcSHA1(filePath string) ([]byte, error) {
+func calcSHA512(filePath string) ([]byte, error) {
 	var result []byte
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -223,7 +223,7 @@ func calcSHA1(filePath string) ([]byte, error) {
 	}
 	defer file.Close()
 
-	hash := sha1.New()
+	hash := sha512.New()
 	if _, err := io.Copy(hash, file); err != nil {
 		return result, err
 	}
@@ -243,7 +243,7 @@ func cp(rootDir string, subDir string, files ...string) {
 			fmt.Printf("\n%v will be replaced", outFile)
 		}
 
-		inCS, err := calcSHA1(inFile)
+		inCS, err := calcSHA512(inFile)
 		checkErr(err)
 
 		info, err := os.Stat(inFile)
@@ -268,7 +268,7 @@ func cp(rootDir string, subDir string, files ...string) {
 		err = out.Sync()
 		checkErr(err)
 
-		outCS, err := calcSHA1(outFile)
+		outCS, err := calcSHA512(outFile)
 		checkErr(err)
 
 		if fmt.Sprint(outCS) != fmt.Sprint(inCS) {
@@ -318,7 +318,7 @@ func download(filename string, url string, checksum string) {
 	_, err = io.Copy(lfn, resp.Body)
 	checkErr(err)
 	// validate the download after it is complete
-	calc, err := calcSHA1(filename)
+	calc, err := calcSHA512(filename)
 	checkErr(err)
 	ccs := fmt.Sprintf("%x", calc)
 	if ccs != checksum {
