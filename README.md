@@ -21,8 +21,25 @@ go get github.com/dustin/go-humanize
 go get github.com/phayes/permbits
 ```
 
+Update the const values for both `userID` and `groupID` for the tomcat user and group ids.
+
+- `cat /etc/passwd` will have the user
+- `cat /etc/group` will have the group
+
 ```bash
 cd tomcatupdate
+nano tomcatupdate
+```
+
+```go
+const (
+	userID      = 0
+	groupID     = 0  
+)
+```
+
+
+```bash
 go build
 ```
 
