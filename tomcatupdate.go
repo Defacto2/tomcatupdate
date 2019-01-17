@@ -1,5 +1,5 @@
 // tomcatupdate.go - Defacto2 Apache Tomcat migration tool
-// version 1.02
+// version 1.03
 // © Ben Garrett
 //
 // References:
@@ -442,6 +442,7 @@ func openGZip(source, target string) string {
 func getChecksum(url string) string {
 	resp, err := http.Get(url)
 	checkErr(err)
+	checkSumHTTP(url, resp)
 	checkHTTP(resp)
 	// Save download to local file
 	defer resp.Body.Close()
@@ -463,9 +464,16 @@ func checkErr(err error) {
 	}
 }
 
+func checkSumHTTP(url string, r *http.Response) {
+	if r.StatusCode != 200 {
+		err := fmt.Errorf("Checksum file%v: %v", filepath.Ext(url), r.Status)
+		fmt.Printf("\n%s", err)
+	}
+}
+
 func checkHTTP(r *http.Response) {
 	if r.StatusCode != 200 {
-		err := fmt.Errorf("%v. Maybe check %v for the current version?", r.Status, urlPage)
+		err := fmt.Errorf("Download file.tar.gz: %v. Maybe check %v for the current version?", r.Status, urlPage)
 		if logErrs == true {
 			log.Fatal("SERVER ERROR: ", err)
 		} else {
