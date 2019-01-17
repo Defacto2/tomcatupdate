@@ -1,5 +1,5 @@
 // tomcatupdate.go - Defacto2 Apache Tomcat migration tool
-// version 1.0
+// version 1.01
 // © Ben Garrett
 //
 // References:
@@ -27,18 +27,17 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dustin/go-humanize"
+	humanize "github.com/dustin/go-humanize"
 	"github.com/phayes/permbits"
 )
 
 const (
-	ver1    = "8" // Tomcat major version
-	ver2    = "5" // Tomcat minor version
-	userID  = 0   // `tomcat` user ID (cat /etc/passwd)
-	groupID = 0   // `tomcat` group ID (cat /etc/group)
-	prefix  = "." // Text to separate results from other feedback
-
-	urlTemplate = "http://www.apache.org/dist/tomcat/tomcat-?/v?/bin/?apache-tomcat-?.tar.gz" // Must always point to apache.org and not a host mirror
+	ver1        = "8"                                                                          // Tomcat major version
+	ver2        = "5"                                                                          // Tomcat minor version
+	userID      = 0                                                                            // `tomcat` user ID (cat /etc/passwd)
+	groupID     = 0                                                                            // `tomcat` group ID (cat /etc/group)
+	prefix      = "."                                                                          // Text to separate results from other feedback
+	urlTemplate = "https://www.apache.org/dist/tomcat/tomcat-?/v?/bin/?apache-tomcat-?.tar.gz" // Must always point to apache.org and not a host mirror
 )
 
 var (
@@ -51,7 +50,7 @@ var (
 
 	configs = []string{"logging.properties", "server.xml", "web.xml"}                                                                      // Tomcat configurations to migrate
 	ignored = []string{"LICENSE", "NOTICE", "webapps/docs", "webapps/examples", "webapps/host-manager", "webapps/manager", "webapps/ROOT"} // Ignore these directories and files when extracting from tarball
-	urlPage = fmt.Sprintf("http://tomcat.apache.org/download-%v0.cgi", ver1)                                                               // Link to Apache Tomcat download page
+	urlPage = fmt.Sprintf("https://tomcat.apache.org/download-%v0.cgi", ver1)                                                              // Link to Apache Tomcat download page
 )
 
 func init() {
@@ -86,7 +85,7 @@ func main() {
 
 	// ask for Tomcat version if no valid flag is supplied
 	if verF == -1 {
-		fmt.Printf("Which version of Tomcat %v.%v.* do you wish to download?: ", ver1, ver2)
+		fmt.Printf("Which edition of Tomcat %v.%v do you wish to download? For example enter 5 to download version %v.%v.5.\nv%v.%v.", ver1, ver2, ver1, ver2, ver1, ver2)
 		ver3, err = askVer()
 		// loop to keep asking for valid input
 		for err != nil {
